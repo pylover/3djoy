@@ -16,6 +16,7 @@
 
 extern int errno;
 
+#define EPOLL_MAXEVENTS 10
 
 /* Used to create string literal from integer during preprocess. */
 #define _STR(X) #X

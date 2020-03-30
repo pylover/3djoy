@@ -44,7 +44,8 @@ static int _process_inputevent(int fd) {
 
 
 int main(int argc, char **argv) {
-    int inputfd, err;
+    int inputfd, err, fdcount, i;
+    struct epoll_event ev, events[EPOLL_MAXEVENTS];
     
     // Parse command line arguments
     cliparse(argc, argv);
@@ -72,11 +73,29 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    ev.events = EPOLLIN;
+    ev.data.fd = inputfd;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, inputfd, &ev) == ERR) {
+        perrorf("epoll_ctl: EPOLL_CTL_ADD, input device");
+        exit(EXIT_FAILURE);
+    }
+
     /* Main Loop */
     while (1) {
-        err = _process_inputevent(inputfd);
-        if (err == ERR) {
+        fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
+        if (fdcount == -1) {
+            perrorf("epoll_wait returned: %d", fdcount);
             exit(EXIT_FAILURE);
+        }
+        
+        for (i = 0; i < fdcount; i++) {
+            ev = events[i];
+            if (ev.data.fd == inputfd) {
+                err = _process_inputevent(inputfd);
+                if (err == ERR) {
+                    exit(EXIT_FAILURE);
+                }
+            }
         }
     }
     return EXIT_SUCCESS;
