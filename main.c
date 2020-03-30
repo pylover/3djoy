@@ -10,10 +10,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <arpa/inet.h>
+#include <sys/epoll.h>
 
 
 static int outfd = -1;
-
+static int epollfd;
 
 
 static int _process_inputevent(int fd) {
@@ -61,6 +62,15 @@ int main(int argc, char **argv) {
     //    perrorf("Cannot open serial device: %s", settings.device);
     //    exit(EXIT_FAILURE);
     //}
+    
+
+    // epoll
+    // Create epoll instance
+    epollfd = epoll_create1(0);
+    if (epollfd < 0) {
+        perrorf("Cannot create epoll file descriptor");
+        exit(EXIT_FAILURE);
+    }
 
     /* Main Loop */
     while (1) {
