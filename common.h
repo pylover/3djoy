@@ -5,16 +5,9 @@
 #include <string.h>
 #include <errno.h>
 
-#define VERSION "1.0.1a"
+#define VERSION "1.0.0a"
 #define OK  0
 #define ERR -1
-
-/* It must be power-of-2, 2 ** n
- */
-#define MAXEVENTS  10
-#define MAXCONNECTIONS  2
-#define CHUNKSIZE   1024
-
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -50,11 +43,11 @@ extern int errno;
 
 struct Settings {
 	char *device;
+    char *serialdevice;
     unsigned int baudrate;
 };
 
 
-volatile int epollfd;
 volatile struct Settings settings;
 
 #endif

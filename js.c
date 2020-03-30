@@ -1,6 +1,6 @@
 #include "common.h"
 
+#include <fcntl.h>
+#include <stdlib.h>
 
-int jsopen() {
-    return OK;
-}
+

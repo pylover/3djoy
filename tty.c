@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <fcntl.h>
-#include <sys/epoll.h>
 
 
 int termiosbaudrate(int b) {
@@ -64,17 +63,16 @@ int termiosbaudrate(int b) {
 
 int serialopen() {
     struct termios options;
-    struct epoll_event ev;
     int baudrate = termiosbaudrate(settings.baudrate);
     if (baudrate == ERR) {
         perrorf("Invalid baudrate: %d", settings.baudrate);
         return ERR;
     }
 
-    printfln("DEV: %s, %d", settings.device, settings.baudrate);
-    int fd = open(settings.device, O_RDWR); // | O_NDELAY); // | O_NOCTTY | O_NONBLOCK);
+    printfln("DEV: %s, %d", settings.serialdevice, settings.baudrate);
+    int fd = open(settings.serialdevice, O_RDWR); // | O_NDELAY); // | O_NOCTTY | O_NONBLOCK);
     if (fd == -1) {
-        perrorf("Can't open serial device: %s", settings.device);
+        perrorf("Can't open serial device: %s", settings.serialdevice);
         return fd;
     }
 
@@ -87,12 +85,5 @@ int serialopen() {
     tcsetattr(fd, TCSANOW, &options);
     tcflush(fd, TCOFLUSH);
 
-    // epoll events
-    ev.events = EPOLLIN | EPOLLOUT;
-    ev.data.fd = fd;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == ERR) {
-        perrorf("epoll_ctl: EPOLL_CTL_ADD, serial interface");
-        exit(EXIT_FAILURE);
-    }
     return fd;
 }
