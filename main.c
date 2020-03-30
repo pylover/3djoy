@@ -3,6 +3,7 @@
 #include "cli.h"
 #include "js.h"
 #include "tty.h"
+#include "gcode.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,38 +12,55 @@
 #include <arpa/inet.h>
 
 
+static int outfd = -1;
+
+
+
 static int _process_inputevent(int fd) {
     struct js_event jse;
-    int bytes = read(fd, &jse, sizeof(jse));
+    char gcode[256];
+    int bytes;
+
+    bytes = read(fd, &jse, sizeof(jse));
     if (bytes < sizeof(jse)) {
         perrorf("Read input device error");
         return ERR;
     }
-    printfln("%d, %d, %d, %d", jse.time, jse.value, jse.type, jse.number);
     
+    bytes = gcodeget(&jse, gcode);
+    if (bytes == ERR) {
+        perrorf(
+            "Unrecognized command: %d, %d, %d", 
+            jse.type, jse.number, jse.value
+        );
+        return ERR;
+    }
+    gcode[bytes] = 0;
+    printfln("%s, %d, %d, %d", gcode, jse.type, jse.number, jse.value);
 	return OK;
 }
 
 
 
 int main(int argc, char **argv) {
-    int inputfd, serialfd, err;
+    int inputfd, err;
     
     // Parse command line arguments
     cliparse(argc, argv);
 
-    inputfd = open(settings.device, O_RDONLY);
+    inputfd = open(settings.input, O_RDONLY);
     if (inputfd == ERR) {
-        perrorf("Cannot open input device: %s", settings.device);
+        perrorf("Cannot open input device: %s", settings.input);
         exit(EXIT_FAILURE);
     }
    
-    // Open and register serial port
-    serialfd = serialopen();
-    if (serialfd == -1) {
-        perrorf("Cannot open serial device: %s", settings.device);
-        exit(EXIT_FAILURE);
-    }
+    outfd = 0; // stdout;
+    // TODO: Open the output device
+    //serialfd = serialopen();
+    //if (serialfd == -1) {
+    //    perrorf("Cannot open serial device: %s", settings.device);
+    //    exit(EXIT_FAILURE);
+    //}
 
     /* Main Loop */
     while (1) {

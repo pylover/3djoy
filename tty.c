@@ -61,29 +61,29 @@ int termiosbaudrate(int b) {
 }
 
 
-int serialopen() {
-    struct termios options;
-    int baudrate = termiosbaudrate(settings.baudrate);
-    if (baudrate == ERR) {
-        perrorf("Invalid baudrate: %d", settings.baudrate);
-        return ERR;
-    }
-
-    printfln("DEV: %s, %d", settings.serialdevice, settings.baudrate);
-    int fd = open(settings.serialdevice, O_RDWR); // | O_NDELAY); // | O_NOCTTY | O_NONBLOCK);
-    if (fd == -1) {
-        perrorf("Can't open serial device: %s", settings.serialdevice);
-        return fd;
-    }
-
-    tcgetattr(fd, &options);
-    cfsetispeed(&options, baudrate);
-    cfsetospeed(&options, baudrate);
-
-    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);     /*Input*/
-    options.c_oflag &= ~OPOST;                              /*Output*/
-    tcsetattr(fd, TCSANOW, &options);
-    tcflush(fd, TCOFLUSH);
-
-    return fd;
-}
+//int serialopen() {
+//    struct termios options;
+//    int baudrate = termiosbaudrate(settings.baudrate);
+//    if (baudrate == ERR) {
+//        perrorf("Invalid baudrate: %d", settings.baudrate);
+//        return ERR;
+//    }
+//
+//    printfln("DEV: %s, %d", settings.serialdevice, settings.baudrate);
+//    int fd = open(settings.serialdevice, O_RDWR); // | O_NDELAY); // | O_NOCTTY | O_NONBLOCK);
+//    if (fd == -1) {
+//        perrorf("Can't open serial device: %s", settings.serialdevice);
+//        return fd;
+//    }
+//
+//    tcgetattr(fd, &options);
+//    cfsetispeed(&options, baudrate);
+//    cfsetospeed(&options, baudrate);
+//
+//    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);     /*Input*/
+//    options.c_oflag &= ~OPOST;                              /*Output*/
+//    tcsetattr(fd, TCSANOW, &options);
+//    tcflush(fd, TCOFLUSH);
+//
+//    return fd;
+//}

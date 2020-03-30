@@ -39,11 +39,13 @@ extern int errno;
 
 
 #define DEFAULT_BAUDRATE    115200
+#define DEFAULT_INPUT       "/dev/input/js0"
+#define DEFAULT_OUTPUT      "-"
 
 
 struct Settings {
-	char *device;
-    char *serialdevice;
+	char *input;
+    char *output;
     unsigned int baudrate;
 };
 

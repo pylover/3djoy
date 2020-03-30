@@ -11,11 +11,13 @@
 const char *argp_program_version = VERSION;
 const char *argp_program_bug_address = "http://github.com/pylover/serialhub";
 static char doc[] = "Serial Interface multiplexer";
-static char args_doc[] = "DEVICE";
+static char args_doc[] = "OUTPUT";
 
 
 /* Options definition */
 static struct argp_option options[] = {
+    {"input", 'i', "INPUT", 0, 
+        "Input device, default: " DEFAULT_INPUT},
 	{"baudrate", 'b', "BAUDRATE", 0, 
         "Baudrate, default: " STR(DEFAULT_BAUDRATE)},
 	{0}
@@ -29,6 +31,10 @@ static int parse_opt(int key, char *arg, struct argp_state *state) {
 		case 'b':
 			settings.baudrate = atoi(arg);
 			break;
+        
+        case 'i':
+            settings.input = arg;
+            break;
 
 		case ARGP_KEY_ARG:
 			if (state->arg_num >= 1) {
@@ -36,7 +42,7 @@ static int parse_opt(int key, char *arg, struct argp_state *state) {
 		        argp_usage(state);
 			    return ARGP_ERR_UNKNOWN;
 			}
-			settings.device = arg;
+			settings.output = arg;
 			break;
   
 		default:
@@ -52,12 +58,6 @@ void cliparse(int argc, char **argv) {
 	int err = argp_parse(&argp, argc, argv, 0, 0, 0);
 	if (err) {
         perrorf("Cannot parse arguments");
-        exit(EXIT_FAILURE);
-	}
-
-	if (settings.device == NULL) {
-        perrorf("Please provide device:");
-        argp_help(&argp, stderr, ARGP_HELP_USAGE, argv[0]);
         exit(EXIT_FAILURE);
 	}
 }

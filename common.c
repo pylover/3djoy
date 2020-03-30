@@ -2,8 +2,8 @@
 
 
 volatile struct Settings settings = {
-    NULL,
-    NULL,
+    DEFAULT_INPUT,
+    DEFAULT_OUTPUT,
     DEFAULT_BAUDRATE,
 };
 
