@@ -3,7 +3,8 @@
 
 #include "js.h"
 
+#define GCODE_REPEAT     1
 
-int gcodeget(struct js_event *e, char *out);
+int gcodeget(struct js_event *e, char *out, int *outlen);
 
 #endif

@@ -11,16 +11,73 @@
 #include <fcntl.h>
 #include <arpa/inet.h>
 #include <sys/epoll.h>
+#include <sys/timerfd.h>
 
 
 static int outfd = -1;
 static int epollfd;
+static int timerfd;
+static char gcode[256];
+
+
+#define TIMER_INTERVAL_NS   100000000  
+#define ON  1
+#define OFF 0
+
+
+static int timersetup() {
+    int fd, err;
+    struct itimerspec new_value;
+    struct timespec now;
+    
+    err = clock_gettime(CLOCK_REALTIME, &now);
+    if (err == ERR) {
+        perrorf("clock_gettime");
+    }
+
+    /* Create a CLOCK_REALTIME absolute timer with initial
+       expiration and interval as specified in command line */
+    new_value.it_value.tv_sec = now.tv_sec;
+    new_value.it_value.tv_nsec = now.tv_nsec;
+    new_value.it_interval.tv_sec = 0;
+    new_value.it_interval.tv_nsec = TIMER_INTERVAL_NS;
+    
+    fd = timerfd_create(CLOCK_REALTIME, 0);
+    if (fd == ERR) {
+        perror("Cannot create timerfd");
+    }
+    
+    err = timerfd_settime(fd, TFD_TIMER_ABSTIME, &new_value, NULL);
+    if (err == ERR) {
+        perror("Cannot set timerfd");
+    }
+
+    return fd;
+}
+
+static int timerstate = OFF;
+
+static void timerset(int s) {
+    struct epoll_event ev;
+    int action;
+    if (timerstate == s) {
+        return;
+    }
+    
+    action = s? EPOLL_CTL_ADD: EPOLL_CTL_DEL; 
+    ev.events = EPOLLIN;
+    ev.data.fd = timerfd;
+    if (epoll_ctl(epollfd, action, timerfd, &ev) == ERR) {
+        perrorf("epoll_ctl: %d, input device", action);
+        exit(EXIT_FAILURE);
+    }
+    timerstate = s;
+}
 
 
 static int _process_inputevent(int fd) {
     struct js_event jse;
-    char gcode[256];
-    int bytes;
+    int bytes, err;
 
     bytes = read(fd, &jse, sizeof(jse));
     if (bytes < sizeof(jse)) {
@@ -28,16 +85,22 @@ static int _process_inputevent(int fd) {
         return ERR;
     }
     
-    bytes = gcodeget(&jse, gcode);
-    if (bytes == ERR) {
+    err = gcodeget(&jse, gcode, &bytes);
+    if (err == ERR) {
         perrorf(
             "Unrecognized command: %d, %d, %d", 
             jse.type, jse.number, jse.value
         );
-        return ERR;
     }
-    gcode[bytes] = 0;
-    printfln("%s, %d, %d, %d", gcode, jse.type, jse.number, jse.value);
+    else if (err == GCODE_REPEAT) {
+        timerset(ON);
+    }
+    else {
+        timerset(OFF);
+    }
+    
+    //gcode[bytes] = 0;
+    printfln("%s, %d, %d, %d, repeat: %d", gcode, jse.type, jse.number, jse.value, err);
 	return OK;
 }
 
@@ -55,7 +118,13 @@ int main(int argc, char **argv) {
         perrorf("Cannot open input device: %s", settings.input);
         exit(EXIT_FAILURE);
     }
-   
+    
+    timerfd = timersetup();
+    if (timerfd == ERR) {
+        perrorf("Cannot create timer");
+        exit(EXIT_FAILURE);
+    }
+
     outfd = 0; // stdout;
     // TODO: Open the output device
     //serialfd = serialopen();
@@ -73,6 +142,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    // input
     ev.events = EPOLLIN;
     ev.data.fd = inputfd;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, inputfd, &ev) == ERR) {
@@ -81,6 +151,7 @@ int main(int argc, char **argv) {
     }
 
     /* Main Loop */
+    unsigned long c, t;
     while (1) {
         fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
         if (fdcount == -1) {
@@ -95,6 +166,14 @@ int main(int argc, char **argv) {
                 if (err == ERR) {
                     exit(EXIT_FAILURE);
                 }
+            }
+            else if (ev.data.fd == timerfd) {
+                err = read(timerfd, &t, sizeof(unsigned long));
+                if (err != sizeof(unsigned long)) {
+                    perrorf("Cannot read from timer");
+                }
+                c += t;
+                printfln("%s", gcode);
             }
         }
     }
