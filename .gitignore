@@ -55,4 +55,5 @@ dkms.conf
 .*.sw[op]
 
 # Project specific
-serialhub
+3djoy
+

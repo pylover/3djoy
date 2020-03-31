@@ -47,8 +47,7 @@ static int _process_inputevent(int fd) {
         return OK;
     }
     
-    printf("%s\n", gcode);
-    fflush(stdout);
+    bytes = dprintf(outfd, "%s\n", gcode);
 	return OK;
 }
 
@@ -59,22 +58,7 @@ int main(int argc, char **argv) {
     
     // Parse command line arguments
     cliparse(argc, argv);
-
-    inputfd = open(settings.input, O_RDONLY);
-    if (inputfd == ERR) {
-        perrorf("Cannot open input device: %s", settings.input);
-        exit(EXIT_FAILURE);
-    }
-
-    outfd = 0; // stdout;
-    // TODO: Open the output device
-    //serialfd = serialopen();
-    //if (serialfd == -1) {
-    //    perrorf("Cannot open serial device: %s", settings.device);
-    //    exit(EXIT_FAILURE);
-    //}
     
-
     // epoll
     // Create epoll instance
     epollfd = epoll_create1(0);
@@ -83,6 +67,15 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
+    
+    outfd = 0; // stdout;
+    // TODO: Open the output device
+    //serialfd = serialopen();
+    //if (serialfd == -1) {
+    //    perrorf("Cannot open serial device: %s", settings.device);
+    //    exit(EXIT_FAILURE);
+    //}
+    
     timerfd = timersetup(epollfd);
     if (timerfd == ERR) {
         perrorf("Cannot create timer");
@@ -90,6 +83,12 @@ int main(int argc, char **argv) {
     }
 
     // input
+    inputfd = open(settings.input, O_RDONLY);
+    if (inputfd == ERR) {
+        perrorf("Cannot open input device: %s", settings.input);
+        exit(EXIT_FAILURE);
+    }
+
     ev.events = EPOLLIN;
     ev.data.fd = inputfd;
     if (epoll_ctl(epollfd, EPOLL_CTL_ADD, inputfd, &ev) == ERR) {
