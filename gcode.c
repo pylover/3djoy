@@ -2,7 +2,7 @@
 #include "gcode.h"
 
 #define STEP 1
-
+#define FEEDRATE    1000
 
 int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
     char axis;
@@ -17,7 +17,7 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
         if (axis == 'Y') {
             step = -step;
         }
-        *outlen = sprintf(outbuff, "G0%c%d", axis, step);
+        *outlen = sprintf(outbuff, "G1F%d%c%d", FEEDRATE, axis, step);
         return GCODE_REPEAT;
     }
     return ERR;;

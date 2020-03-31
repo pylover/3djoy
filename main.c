@@ -20,7 +20,9 @@ static int timerfd;
 static char gcode[256];
 
 
-#define TIMER_INTERVAL_NS   100000000  
+#define NS                  1000000000
+#define TIMER_INTERVAL_NS   50000000  
+#define TIMER_DELAY_NS      000000000  
 #define ON  1
 #define OFF 0
 
@@ -58,8 +60,8 @@ static void timerset(int s) {
    
     if (s) {
         clock_gettime(CLOCK_REALTIME, &now);
-        new_value.it_value.tv_sec = now.tv_sec;
-        new_value.it_value.tv_nsec = now.tv_nsec;
+        new_value.it_value.tv_sec = now.tv_sec + ((now.tv_nsec + TIMER_DELAY_NS) / NS);
+        new_value.it_value.tv_nsec = (now.tv_nsec + TIMER_DELAY_NS) % NS;
         new_value.it_interval.tv_sec = 0;
         new_value.it_interval.tv_nsec = TIMER_INTERVAL_NS;
     }
@@ -93,19 +95,20 @@ static int _process_inputevent(int fd) {
             "Unrecognized command: %d, %d, %d", 
             jse.type, jse.number, jse.value
         );
+        return OK;
     }
     else if (err == GCODE_REPEAT) {
         timerset(ON);
     }
     else {
         timerset(OFF);
+        return OK;
     }
     
-    //gcode[bytes] = 0;
-    printfln("%s, %d, %d, %d, repeat: %d", gcode, jse.type, jse.number, jse.value, err);
+    //printfln("%s, %d, %d, %d, repeat: %d", gcode, jse.type, jse.number, jse.value, err);
+    printfln("%s", gcode);
 	return OK;
 }
-
 
 
 int main(int argc, char **argv) {
@@ -151,6 +154,9 @@ int main(int argc, char **argv) {
         perrorf("epoll_ctl: EPOLL_CTL_ADD, input device");
         exit(EXIT_FAILURE);
     }
+    
+    // Setup output device
+    printfln("G91");
 
     /* Main Loop */
     unsigned long c, t;
