@@ -5,6 +5,7 @@
 #include "gcode.h"
 #include "timer.h"
 #include "output.h"
+#include "input.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -14,12 +15,10 @@
 #include <sys/epoll.h>
 
 
-static int outfd = -1;
-static int epollfd;
 static char gcode[256];
 
 
-static int _process_inputevent(int fd) {
+static int _process_inputevent(int fd, int outfd) {
     struct js_event jse;
     int bytes, err;
 
@@ -52,26 +51,27 @@ static int _process_inputevent(int fd) {
 
 
 int main(int argc, char **argv) {
-    int inputfd, err, fdcount, timerfd, i;
+    int epollfd, inputfd, err, fdcount, timerfd, outfd, i;
     struct epoll_event ev, events[EPOLL_MAXEVENTS];
     
     // Parse command line arguments
     cliparse(argc, argv);
     
     // epoll
-    // Create epoll instance
     epollfd = epoll_create1(0);
     if (epollfd < 0) {
         perrorf("Cannot create epoll file descriptor");
         exit(EXIT_FAILURE);
     }
 
-    outfd = openoutput(epollfd);// stdout;
+    // output
+    outfd = outputopen(epollfd);
     if (outfd == ERR) {
         perrorf("Cannot open ouput: %s", settings.output);
         exit(EXIT_FAILURE);
     }
-    
+   
+    // timer
     timerfd = timersetup(epollfd);
     if (timerfd == ERR) {
         perrorf("Cannot create timer");
@@ -79,24 +79,17 @@ int main(int argc, char **argv) {
     }
 
     // input
-    inputfd = open(settings.input, O_RDONLY);
+    inputfd = inputopen(epollfd);
     if (inputfd == ERR) {
         perrorf("Cannot open input device: %s", settings.input);
         exit(EXIT_FAILURE);
     }
 
-    ev.events = EPOLLIN;
-    ev.data.fd = inputfd;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, inputfd, &ev) == ERR) {
-        perrorf("epoll_ctl: EPOLL_CTL_ADD, input device");
-        exit(EXIT_FAILURE);
-    }
-   
     // Setup output device
     gcodeinit(outfd);
+    // TODO: error handling
 
     /* Main Loop */
-    char buff[1025];
     while (1) {
         fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
         if (fdcount == -1) {
@@ -107,19 +100,17 @@ int main(int argc, char **argv) {
         for (i = 0; i < fdcount; i++) {
             ev = events[i];
             if (ev.data.fd == inputfd) {
-                err = _process_inputevent(inputfd);
+                err = _process_inputevent(inputfd, outfd);
                 if (err == ERR) {
                     exit(EXIT_FAILURE);
                 }
             }
             if (ev.data.fd == outfd) {
-                // TODO: Encapsulate out read!
-                err = read(outfd, buff, 1024);
+                err = outputread();
                 if (err == ERR) {
                     perrorf("cannot read from out device");
+                    exit(EXIT_FAILURE);
                 }
-                buff[err] = 0;
-                info("%s", buff);
             }
             else if (ev.data.fd == timerfd) {
                 // Repeat

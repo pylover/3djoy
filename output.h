@@ -3,6 +3,6 @@
 
 #define output(fd, ... ) dprintf(fd, __VA_ARGS__)
 
-int openoutput(int epollfd);
-
+int outputopen(int epollfd);
+int outputread();
 #endif
