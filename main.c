@@ -19,9 +19,6 @@ static int epollfd;
 static char gcode[256];
 
 
-// TODO: remove all stdout logs
-
-
 static int _process_inputevent(int fd) {
     struct js_event jse;
     int bytes, err;
@@ -108,7 +105,6 @@ int main(int argc, char **argv) {
             exit(EXIT_FAILURE);
         }
     
-        // TODO: read from ouput device to make buffers empty!
         for (i = 0; i < fdcount; i++) {
             ev = events[i];
             if (ev.data.fd == inputfd) {
