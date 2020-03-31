@@ -2,7 +2,7 @@ CC = gcc
 KERNEL = $(shell uname -r)
 CFLAGS = -Wall -I. -I/usr/src/linux-headers-$(KERNEL)/include
 LIBS = -lm
-OBJECTS = common.o cli.o js.o tty.o gcode.o
+OBJECTS = common.o cli.o js.o tty.o gcode.o timer.o
 PREFIX := /usr/local
 EXEC := 3djoy
 
@@ -14,6 +14,7 @@ cli.o: cli.c cli.h common.h
 js.o: js.c js.h
 tty.o: tty.c tty.h
 gcode.o: gcode.c gcode.h js.h
+timer.o: timer.c timer.h
 
 .PHONY: clean 
 clean:
