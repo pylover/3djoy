@@ -46,13 +46,14 @@ extern int errno;
 #define DEFAULT_BAUDRATE    115200
 #define DEFAULT_INPUT       "/dev/input/js0"
 #define DEFAULT_OUTPUT      "-"
-
+#define DEFAULT_TCPPORT     5600
 
 struct Settings {
 	char *input;
     char *output;
     unsigned int baudrate;
     char verbose;
+    int tcpport;
 };
 
 

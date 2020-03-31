@@ -22,6 +22,8 @@ static struct argp_option options[] = {
         "Baudrate, default: " STR(DEFAULT_BAUDRATE)},
     {"verbose", 'v', NULL, 0, 
         "Verbose Mode"},
+    {"port", 'p', "TCPPORT", 0,
+        "Remote TCP port, default: " STR(DEFAULT_TCPPORT)},
 	{0}
 };
 
@@ -30,6 +32,10 @@ static struct argp_option options[] = {
 static int parse_opt(int key, char *arg, struct argp_state *state) {
 	switch (key) {
         
+        case 'p':
+            settings.tcpport = atoi(arg);
+            break;
+
         case 'v':
             settings.verbose = 1;
             break;
