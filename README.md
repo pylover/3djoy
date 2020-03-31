@@ -51,9 +51,4 @@ systemctl enable 3djoy.service
 service 3djoy start
 ```
 
-Check the service using:
-
-```bash
-ss -lnp | grep serialhub
-```
 
