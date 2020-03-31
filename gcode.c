@@ -9,11 +9,12 @@
 int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
     char axis;
     int step;
-    if (e->type == JS_EVENT_AXIS) {
-        if (e->value == 0) {
-            return GCODE_STOPREPEATE;
-        }
 
+    if (e->value == 0) {
+        return GCODE_STOPREPEATE;
+    }
+
+    if (e->type == JS_EVENT_AXIS) {
         axis = e->number == JS_AXIS_X? 'X': 'Y';
         step = e->value > 0? -STEP: STEP;
         if (axis == 'Y') {
