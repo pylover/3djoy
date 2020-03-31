@@ -7,10 +7,9 @@
 #define TIMER_ON  1
 #define TIMER_OFF 0
 
-volatile int timerstate;
-volatile int timerfd;
 
 int timersetup();
 void timerset(int s); 
+int timerread();
 
 #endif

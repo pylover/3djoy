@@ -29,5 +29,5 @@ install: $(EXEC)
 
 .PHONY: test
 test: $(EXEC)
-	./3djoy /dev/ttyACM0
+	./3djoy
 

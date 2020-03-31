@@ -52,7 +52,7 @@ static int _process_inputevent(int fd) {
 
 
 int main(int argc, char **argv) {
-    int inputfd, err, fdcount, i;
+    int inputfd, err, fdcount, timerfd, i;
     struct epoll_event ev, events[EPOLL_MAXEVENTS];
     
     // Parse command line arguments
@@ -96,7 +96,6 @@ int main(int argc, char **argv) {
     gcodeinit(outfd);
 
     /* Main Loop */
-    unsigned long t;
     char buff[1025];
     while (1) {
         fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
@@ -114,18 +113,20 @@ int main(int argc, char **argv) {
                 }
             }
             if (ev.data.fd == outfd) {
-                err =  read(outfd, buff, 1024);
+                // TODO: Encapsulate out read!
+                err = read(outfd, buff, 1024);
                 if (err == ERR) {
                     perrorf("cannot read from out device");
                 }
                 buff[err] = 0;
                 info("%s", buff);
             }
-            // Repeat
-            else if (timerstate && (ev.data.fd == timerfd)) {
-                err = read(timerfd, &t, sizeof(unsigned long));
-                if (err != sizeof(unsigned long)) {
+            else if (ev.data.fd == timerfd) {
+                // Repeat
+                err = timerread();
+                if (err == ERR) {
                     perrorf("Cannot read from timer");
+                    exit(EXIT_FAILURE);
                 }
                 output(outfd, "%s\n", gcode);
             }

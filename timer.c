@@ -4,29 +4,30 @@
 #include <stdlib.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
+#include <unistd.h>
 
 
-volatile int timerstate = TIMER_OFF;
+static int timerfd;
+static int timerstate = TIMER_OFF;
 
 
 int timersetup(int epollfd) {
-    int fd;
     struct epoll_event ev;
 
-    fd = timerfd_create(CLOCK_REALTIME, 0);
-    if (fd == ERR) {
+    timerfd = timerfd_create(CLOCK_REALTIME, 0);
+    if (timerfd == ERR) {
         perror("Cannot create timerfd");
         return ERR;
     }
 
     ev.events = EPOLLIN;
-    ev.data.fd = fd;
-    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, fd, &ev) == ERR) {
+    ev.data.fd = timerfd;
+    if (epoll_ctl(epollfd, EPOLL_CTL_ADD, timerfd, &ev) == ERR) {
         perrorf("epoll_ctl: ADD, input device");
         return ERR;
     }
 
-    return fd;
+    return timerfd;
 }
 
 
@@ -59,3 +60,15 @@ void timerset(int s) {
     timerstate = s;
 }
 
+int timerread() {
+    unsigned long t;
+    int err;
+    if (!timerstate) {
+        return OK;
+    }
+    err = read(timerfd, &t, sizeof(unsigned long));
+    if (err != sizeof(unsigned long)) {
+        return ERR;
+    }
+    return OK;
+}
