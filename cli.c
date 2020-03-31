@@ -20,6 +20,8 @@ static struct argp_option options[] = {
         "Input device, default: " DEFAULT_INPUT},
 	{"baudrate", 'b', "BAUDRATE", 0, 
         "Baudrate, default: " STR(DEFAULT_BAUDRATE)},
+    {"verbose", 'v', NULL, 0, 
+        "Verbose Mode"},
 	{0}
 };
 
@@ -27,6 +29,10 @@ static struct argp_option options[] = {
 /* Parse a single option. */
 static int parse_opt(int key, char *arg, struct argp_state *state) {
 	switch (key) {
+        
+        case 'v':
+            settings.verbose = 1;
+            break;
 
 		case 'b':
 			settings.baudrate = atoi(arg);

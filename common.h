@@ -36,8 +36,8 @@ extern int errno;
 } while(0)
  
 
-#define info( ... ) LOG(stderr, 0, __VA_ARGS__)
-#define infoln( ... ) LOG(stderr, 1, __VA_ARGS__)
+#define info( ... ) if (settings.verbose) { LOG(stderr, 0, __VA_ARGS__); }
+#define infoln( ... ) if (settings.verbose) { LOG(stderr, 1, __VA_ARGS__); }
 #define perrorf( ... ) LOG(stderr, 1, __VA_ARGS__)
 #define infosocket(m, a) \
     infoln("%s%s:%d", m, inet_ntoa(a.sin_addr), ntohs(a.sin_port))
@@ -52,6 +52,7 @@ struct Settings {
 	char *input;
     char *output;
     unsigned int baudrate;
+    char verbose;
 };
 
 

@@ -19,7 +19,7 @@ int outputopen(int epollfd) {
     struct epoll_event ev;
     
     if (settings.output[0] == '-') {
-        perrorf("Using stdout as output device");
+        infoln("Using stdout as output device");
         outfd = STDOUT;
     }
     else if (strnstr(settings.output, "/dev/tty", 8) != NULL) {

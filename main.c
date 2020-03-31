@@ -30,7 +30,7 @@ static int _process_inputevent(int fd, int outfd) {
     
     err = gcodeget(&jse, gcode, &bytes);
     if (err == ERR) {
-        perrorf(
+        infoln(
             "Unrecognized command: %d, %d, %d", 
             jse.type, jse.number, jse.value
         );
