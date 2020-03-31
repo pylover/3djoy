@@ -9,7 +9,7 @@
 
 
 const char *argp_program_version = VERSION;
-const char *argp_program_bug_address = "http://github.com/pylover/serialhub";
+const char *argp_program_bug_address = "http://github.com/pylover/3djoy";
 static char doc[] = "Serial Interface multiplexer";
 static char args_doc[] = "OUTPUT";
 
