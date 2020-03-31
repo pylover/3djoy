@@ -169,7 +169,7 @@ int main(int argc, char **argv) {
                     exit(EXIT_FAILURE);
                 }
             }
-            else if (ev.data.fd == timerfd) {
+            else if (timerstate && (ev.data.fd == timerfd)) {
                 err = read(timerfd, &t, sizeof(unsigned long));
                 if (err != sizeof(unsigned long)) {
                     perrorf("Cannot read from timer");
