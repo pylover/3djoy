@@ -99,7 +99,7 @@ int main(int argc, char **argv) {
     gcodeinit(outfd);
 
     /* Main Loop */
-    unsigned long c, t;
+    unsigned long t;
     char buff[1025];
     while (1) {
         fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
                     perrorf("cannot read from out device");
                 }
                 buff[err] = 0;
-                printf("%s", buff);
+                info("%s", buff);
             }
             // Repeat
             else if (timerstate && (ev.data.fd == timerfd)) {
@@ -131,7 +131,6 @@ int main(int argc, char **argv) {
                 if (err != sizeof(unsigned long)) {
                     perrorf("Cannot read from timer");
                 }
-                c += t;
                 output(outfd, "%s\n", gcode);
             }
         }

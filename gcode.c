@@ -1,4 +1,5 @@
 #include "common.h"
+#include "output.h"
 #include "gcode.h"
 
 #define STEP 1
@@ -38,7 +39,7 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
 int gcodeinit(int fd) {
     int err;
 
-    err = dprintf(fd, "G91\n");    
+    err = output(fd, "G91\n");    
     if (err == ERR) {
         return ERR;
     }
