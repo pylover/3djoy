@@ -95,18 +95,20 @@ static int _process_inputevent(int fd) {
             "Unrecognized command: %d, %d, %d", 
             jse.type, jse.number, jse.value
         );
+        timerset(OFF);
         return OK;
     }
     else if (err == GCODE_REPEAT) {
         timerset(ON);
     }
-    else {
+    else if (err == GCODE_STOPREPEATE) {
         timerset(OFF);
         return OK;
     }
     
     //printfln("%s, %d, %d, %d, repeat: %d", gcode, jse.type, jse.number, jse.value, err);
-    printfln("%s", gcode);
+    printf("%s\n", gcode);
+    fflush(stdout);
 	return OK;
 }
 
