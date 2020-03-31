@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     // output
     outfd = outputopen(epollfd);
     if (outfd == ERR) {
-        perrorf("Cannot open ouput: %s", settings.output);
+        perrorf("Cannot open output: %s", settings.output);
         exit(EXIT_FAILURE);
     }
    

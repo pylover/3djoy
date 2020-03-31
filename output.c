@@ -8,10 +8,43 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/epoll.h>
+#include <sys/un.h>
 
 
 static int outfd;
 
+
+static int unixopen() {
+    struct sockaddr_un addr;
+    char filename[256];
+    int fd, err;
+
+    strcpy(filename, settings.output + 7);
+   
+    /* Create local socket. */
+    fd = socket(AF_UNIX, SOCK_STREAM, 0);
+    if (fd == ERR) {
+        return fd;
+    }
+    
+    memset(&addr, 0, sizeof(struct sockaddr_un));
+
+    /* Connect socket to socket address */
+    addr.sun_family = AF_UNIX;
+    strncpy(addr.sun_path, filename, sizeof(addr.sun_path) - 1);
+
+    err = connect(
+        fd, 
+        (const struct sockaddr *) &addr,
+        sizeof(struct sockaddr_un)
+    );
+    if (err == ERR) {
+        perrorf("Server is down: %s", settings.output);
+        return ERR;
+    }
+
+    return fd;
+}
 
 static int tcpopen() {
 	int err, fd, option = 1;
@@ -67,13 +100,19 @@ int outputopen(int epollfd) {
         outfd = STDOUT;
     }
     else if (strnstr(settings.output, "/dev/tty", 8) != NULL) {
-        perrorf("Using tty device: %s as output.", settings.output);
+        infoln("Using tty device: %s as output.", settings.output);
         outfd = serialopen();
         if (outfd == ERR) {
             return ERR;
         }
         // Wait some times to allow marlin to initialize the serial communication
         sleep(2);
+    }
+    else if (strnstr(settings.output, "unix://", 7) != NULL) {
+        outfd = unixopen();
+        if (outfd == ERR) {
+            return ERR;
+        }
     }
     else {
         outfd = tcpopen();
