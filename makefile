@@ -1,8 +1,8 @@
 CC = gcc
 KERNEL = $(shell uname -r)
-CFLAGS = -Wall -I. -I/usr/src/linux-headers-$(KERNEL)/include
 LIBS = -lm
-OBJECTS = common.o cli.o js.o tty.o gcode.o timer.o
+CFLAGS = -Wall -I. -I/usr/src/linux-headers-$(KERNEL)/include
+OBJECTS = common.o cli.o js.o tty.o gcode.o timer.o output.o
 PREFIX := /usr/local
 EXEC := 3djoy
 
@@ -11,10 +11,11 @@ EXEC := 3djoy
 
 common.o: common.c common.h
 cli.o: cli.c cli.h common.h 
-js.o: js.c js.h
-tty.o: tty.c tty.h
-gcode.o: gcode.c gcode.h js.h
-timer.o: timer.c timer.h
+js.o: js.c js.h common.h
+tty.o: tty.c tty.h common.h
+gcode.o: gcode.c gcode.h js.h common.h
+timer.o: timer.c timer.h common.h
+output.o: output.c output.h tty.h common.h
 
 .PHONY: clean 
 clean:
@@ -28,5 +29,5 @@ install: $(EXEC)
 
 .PHONY: test
 test: $(EXEC)
-	./3djoy /dev/input/js0
+	./3djoy /dev/ttyACM0
 

@@ -7,5 +7,5 @@
 #define GCODE_STOPREPEATE    2
 
 int gcodeget(struct js_event *e, char *out, int *outlen);
-
+int gcodeinit(int fd);
 #endif

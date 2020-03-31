@@ -5,7 +5,6 @@
 #define FEEDRATE    1000
 
 
-
 int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
     char axis;
     int step;
@@ -36,4 +35,15 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
     return ERR;;
 }
 
+
+int gcodeinit(int fd) {
+    int err;
+
+    err = dprintf(fd, "G91\n");    
+    if (err == ERR) {
+        return ERR;
+    }
+
+    return OK;
+}
 

@@ -2,9 +2,9 @@
 #include "common.h"
 #include "cli.h"
 #include "js.h"
-#include "tty.h"
 #include "gcode.h"
 #include "timer.h"
+#include "output.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -18,6 +18,8 @@ static int outfd = -1;
 static int epollfd;
 static char gcode[256];
 
+
+// TODO: remove all stdout logs
 
 
 static int _process_inputevent(int fd) {
@@ -67,14 +69,11 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    
-    outfd = 0; // stdout;
-    // TODO: Open the output device
-    //serialfd = serialopen();
-    //if (serialfd == -1) {
-    //    perrorf("Cannot open serial device: %s", settings.device);
-    //    exit(EXIT_FAILURE);
-    //}
+    outfd = openoutput(epollfd);// stdout;
+    if (outfd == ERR) {
+        perrorf("Cannot open ouput: %s", settings.output);
+        exit(EXIT_FAILURE);
+    }
     
     timerfd = timersetup(epollfd);
     if (timerfd == ERR) {
@@ -95,19 +94,22 @@ int main(int argc, char **argv) {
         perrorf("epoll_ctl: EPOLL_CTL_ADD, input device");
         exit(EXIT_FAILURE);
     }
+   
     
     // Setup output device
-    printfln("G91");
+    gcodeinit(outfd);
 
     /* Main Loop */
     unsigned long c, t;
+    char buff[1025];
     while (1) {
         fdcount = epoll_wait(epollfd, events, EPOLL_MAXEVENTS, -1);
         if (fdcount == -1) {
             perrorf("epoll_wait returned: %d", fdcount);
             exit(EXIT_FAILURE);
         }
-        
+    
+        // TODO: read from ouput device to make buffers empty!
         for (i = 0; i < fdcount; i++) {
             ev = events[i];
             if (ev.data.fd == inputfd) {
@@ -116,13 +118,22 @@ int main(int argc, char **argv) {
                     exit(EXIT_FAILURE);
                 }
             }
+            if (ev.data.fd == outfd) {
+                err =  read(outfd, buff, 1024);
+                if (err == ERR) {
+                    perrorf("cannot read from out device");
+                }
+                buff[err] = 0;
+                printf("%s", buff);
+            }
+            // Repeat
             else if (timerstate && (ev.data.fd == timerfd)) {
                 err = read(timerfd, &t, sizeof(unsigned long));
                 if (err != sizeof(unsigned long)) {
                     perrorf("Cannot read from timer");
                 }
                 c += t;
-                printfln("%s", gcode);
+                dprintf(outfd, "%s\n", gcode);
             }
         }
     }

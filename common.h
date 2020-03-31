@@ -16,6 +16,7 @@
 
 extern int errno;
 
+#define STDOUT  0
 #define EPOLL_MAXEVENTS 10
 
 /* Used to create string literal from integer during preprocess. */
@@ -52,5 +53,7 @@ struct Settings {
 
 
 volatile struct Settings settings;
+
+char * strnstr(const char *s, const char *find, size_t slen);
 
 #endif
