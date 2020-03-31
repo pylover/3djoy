@@ -29,10 +29,13 @@ static int _process_inputevent(int fd, int outfd) {
     }
     
     err = gcodeget(&jse, gcode, &bytes);
+
     if (err == ERR) {
-        infoln(
+        perrorf(
             "Unrecognized command: %d, %d, %d", 
-            jse.type, jse.number, jse.value
+            jse.type, 
+            jse.number, 
+            jse.value
         );
         timerset(TIMER_OFF);
         return OK;
@@ -41,6 +44,10 @@ static int _process_inputevent(int fd, int outfd) {
         timerset(TIMER_ON);
     }
     else if (err == GCODE_STOPREPEATE) {
+        timerset(TIMER_OFF);
+        return OK;
+    }
+    else if (err == GCODE_IGNORE) {
         timerset(TIMER_OFF);
         return OK;
     }

@@ -32,6 +32,12 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
                 }
         }
     }
+    else if ((e->type & JS_EVENT_INIT) == JS_EVENT_INIT) {
+        infoln(
+            "Input init command: %d, %d, %d", 
+            e->type, e->number, e->value);
+        return GCODE_IGNORE;
+    }
     return ERR;;
 }
 
