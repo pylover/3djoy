@@ -48,8 +48,8 @@ static int _process_inputevent(int fd) {
         timerset(TIMER_OFF);
         return OK;
     }
-    
-    bytes = dprintf(outfd, "%s\n", gcode);
+   
+    output(outfd, "%s\n", gcode);
 	return OK;
 }
 
@@ -95,7 +95,6 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
    
-    
     // Setup output device
     gcodeinit(outfd);
 
@@ -133,7 +132,7 @@ int main(int argc, char **argv) {
                     perrorf("Cannot read from timer");
                 }
                 c += t;
-                dprintf(outfd, "%s\n", gcode);
+                output(outfd, "%s\n", gcode);
             }
         }
     }

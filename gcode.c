@@ -26,7 +26,6 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
             case JS_NINE:
             
                 if (e->value == 1) {
-                    //printf("%d, %d, %d\n", e->type, e->number, e->value); 
                     *outlen = sprintf(outbuff, "G28");
                     return OK;
                 }

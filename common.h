@@ -24,9 +24,11 @@ extern int errno;
 #define STR(X) _STR(X)
 
 
-#define LOG(file, ...) do {	\
+#define LOG(file, cr, ...) do {	\
 	fprintf(file, __VA_ARGS__); \
-	fprintf(file, "\n" ); \
+    if (cr) { \
+	    fprintf(file, "\n" ); \
+    } \
     if ((file == stderr) && errno) { \
         fprintf(file, "Additional info: %s\n", strerror(errno)); \
     } \
@@ -34,10 +36,11 @@ extern int errno;
 } while(0)
  
 
-#define printfln( ... ) LOG(stdout, __VA_ARGS__)
-#define perrorf( ... ) LOG(stderr, __VA_ARGS__)
-#define printsocket(m, a) \
-    printf("%s%s:%d\n", m, inet_ntoa(a.sin_addr), ntohs(a.sin_port))
+#define info( ... ) LOG(stderr, 0, __VA_ARGS__)
+#define infoln( ... ) LOG(stderr, 1, __VA_ARGS__)
+#define perrorf( ... ) LOG(stderr, 1, __VA_ARGS__)
+#define infosocket(m, a) \
+    infoln("%s%s:%d", m, inet_ntoa(a.sin_addr), ntohs(a.sin_port))
 
 
 #define DEFAULT_BAUDRATE    115200

@@ -69,7 +69,7 @@ int serialopen() {
         return ERR;
     }
 
-    printfln("DEV: %s, %d", settings.output, settings.baudrate);
+    info("DEV: %s, %d", settings.output, settings.baudrate);
     int fd = open(settings.output, O_RDWR); // | O_NDELAY); // | O_NOCTTY | O_NONBLOCK);
     if (fd == ERR) {
         perrorf("Can't open serial device: %s", settings.output);

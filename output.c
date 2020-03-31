@@ -17,7 +17,6 @@ int openoutput(int epollfd) {
     int fd;
     struct epoll_event ev;
     
-    printfln("%s", settings.output);
     if (settings.output[0] == '-') {
         perrorf("Using stdout as output device");
         fd = STDOUT;
