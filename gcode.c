@@ -4,9 +4,9 @@
 
 
 // TODO: Move all to common.h
-#define STEP 1
-#define FEEDRATE    1100
-#define Z_FEEDRATE  800
+#define STEP        1
+#define FEEDRATE    1000
+#define Z_FEEDRATE  500
 #define E_FEEDRATE  200
 
 
@@ -37,11 +37,13 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
             case JS_NINE:   // Home
                 *outlen = sprintf(outbuff, "G28");
                 return OK;
+
             case JS_ONE:    // Z+
             case JS_THREE:  // Z-
                 step = e->number == JS_THREE? -STEP: STEP;
                 *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
                 return GCODE_REPEAT;
+
             case JS_FOUR:     // E+
             case JS_TWO:     // E-
                 step = e->number == JS_TWO? -STEP: STEP;
