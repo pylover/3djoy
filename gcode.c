@@ -7,6 +7,7 @@
 #define STEP 1
 #define FEEDRATE    1100
 #define Z_FEEDRATE  1100
+#define E_FEEDRATE  1100
 
 
 static unsigned char nuzzle = 0;
@@ -41,15 +42,20 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
                 step = e->number == JS_THREE? -STEP: STEP;
                 *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
                 return GCODE_REPEAT;
-            case JS_L1:     // Nuzzle +
-            case JS_L2:     // Nuzzle -
-                step = e->number == JS_L2? -STEP: STEP;
+            case JS_FOUR:     // E+
+            case JS_TWO:     // E-
+                step = e->number == JS_TWO? -STEP: STEP;
+                *outlen = sprintf(outbuff, "G1F%dE%d", E_FEEDRATE, step);
+                return GCODE_REPEAT;
+
+            case JS_R1:     // Nuzzle +
+            case JS_R2:     // Nuzzle -
+                step = e->number == JS_R2? -STEP: STEP;
                 nuzzle += step;
                 if (nuzzle == 255) {
                     nuzzle -= step;
                     return GCODE_STOPREPEATE;
                 }
-                nuzzle += step;
                 *outlen = sprintf(outbuff, "M104S%d", nuzzle);
                 return GCODE_REPEAT;
         }
