@@ -6,8 +6,8 @@
 // TODO: Move all to common.h
 #define STEP 1
 #define FEEDRATE    1100
-#define Z_FEEDRATE  1100
-#define E_FEEDRATE  1100
+#define Z_FEEDRATE  800
+#define E_FEEDRATE  200
 
 
 static unsigned char nuzzle = 0;
