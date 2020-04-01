@@ -2,9 +2,14 @@
 #include "output.h"
 #include "gcode.h"
 
+
+// TODO: Move all to common.h
 #define STEP 1
-#define FEEDRATE    1000
-#define Z_FEEDRATE  400
+#define FEEDRATE    1100
+#define Z_FEEDRATE  1100
+
+
+static char nuzzle = 0;
 
 
 int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
@@ -36,6 +41,12 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
                 step = e->number == JS_THREE? -STEP: STEP;
                 *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
                 return GCODE_REPEAT;
+            case JS_L1:
+            case JS_L2:
+                nuzzle += e->number == JS_L2? -STEP: STEP;
+                *outlen = sprintf(outbuff, "M104S%d", nuzzle);
+                return OK;
+
         }
     }
     else if ((e->type & JS_EVENT_INIT) == JS_EVENT_INIT) {

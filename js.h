@@ -10,6 +10,8 @@
 #define JS_ONE                  0x00
 #define JS_THREE                0x02
 #define JS_NINE                 0x08
+#define JS_L1                   0x04
+#define JS_L2                   0x06
 
 
 struct js_event {
