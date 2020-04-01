@@ -15,21 +15,27 @@
 #include <sys/epoll.h>
 
 
-static char gcode[256];
+//static char gcode[256];
+static struct js_event jse;
 
 
-static int _process_inputevent(int fd, int outfd) {
-    struct js_event jse;
-    int bytes, err;
+static int read_jsevent(int fd) {
+    int bytes;
 
     bytes = read(fd, &jse, sizeof(jse));
     if (bytes < sizeof(jse)) {
         perrorf("Read input device error");
         return ERR;
     }
+    return OK;
+}
+
+
+static int process_jsevent(int outfd) {
+    char gcode[50];
+    int bytes, err;
     
     err = gcodeget(&jse, gcode, &bytes);
-
     if (err == ERR) {
         perrorf(
             "Unrecognized command: %d, %d, %d", 
@@ -107,10 +113,16 @@ int main(int argc, char **argv) {
         for (i = 0; i < fdcount; i++) {
             ev = events[i];
             if (ev.data.fd == inputfd) {
-                err = _process_inputevent(inputfd, outfd);
+                err = read_jsevent(inputfd);
                 if (err == ERR) {
                     exit(EXIT_FAILURE);
                 }
+
+                err = process_jsevent(outfd);
+                if (err == ERR) {
+                    exit(EXIT_FAILURE);
+                }
+
             }
             if (ev.data.fd == outfd) {
                 err = outputread();
@@ -126,7 +138,12 @@ int main(int argc, char **argv) {
                     perrorf("Cannot read from timer");
                     exit(EXIT_FAILURE);
                 }
-                output(outfd, "%s\n", gcode);
+                //output(outfd, "%s\n", gcode);
+                err = process_jsevent(outfd);
+                if (err == ERR) {
+                    exit(EXIT_FAILURE);
+                }
+
             }
         }
     }
