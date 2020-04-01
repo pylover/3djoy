@@ -20,11 +20,28 @@ sudo make install
 
 ```bash
 3djoy --help
-TODO: put help here
+Usage: 3djoy [OPTION...] OUTPUT
+Serial Interface multiplexer
+
+  -b, --baudrate=BAUDRATE    Baudrate, default: 115200
+  -i, --input=INPUT          Input device, default: /dev/input/js0
+  -p, --port=TCPPORT         Remote TCP port, default: 5600
+  -v, --verbose              Verbose Mode
+  -?, --help                 Give this help list
+      --usage                Give a short usage message
+  -V, --version              Print program version
+
+Mandatory or optional arguments to long options are also mandatory or optional
+for any corresponding short options.
+
+Report bugs to http://github.com/pylover/3djoy.
 ```
 
 
 ### Systemd
+
+First you have to install [serialhub](https://github.com/pylover/serialhub).
+
 
 Create a file named `/etc/systemd/system/3djoy.service`.
 
@@ -32,23 +49,28 @@ Create a file named `/etc/systemd/system/3djoy.service`.
 [Unit]
 Description=3djoy
 After=network.target
+Wants=serialhub.serivce
 
 [Service]
-ExecStart=/usr/local/bin/3djoy --baudrate 115200 /dev/ttyAMA0
+ExecStart=/usr/local/bin/3djoy --baudrate 115200 unix:///run/serialhub.socket
 Restart=on-failure
 KillSignal=SIGINT
 
 [Install]
 WantedBy=multi-user.target
-
 ```
 
 Then:
 
 ```bash
 systemctl daemon-reload
-systemctl enable 3djoy.service
-service 3djoy start
 ```
 
+
+### UDEV
+
+```bash
+KERNEL=="js?", ACTION=="add", ENV{ID_MODEL}=="usb_gamepad", RUN+="/bin/systemctl start 3djoy.service"
+KERNEL=="js?", ACTION=="remove", ENV{ID_MODEL}=="usb_gamepad", RUN+="/bin/systemctl stop 3djoy.service"
+```
 
