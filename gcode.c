@@ -35,7 +35,7 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
             case JS_THREE:  // Z-
                 step = e->number == JS_THREE? -STEP: STEP;
                 *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
-                return OK;
+                return GCODE_REPEAT;
         }
     }
     else if ((e->type & JS_EVENT_INIT) == JS_EVENT_INIT) {
