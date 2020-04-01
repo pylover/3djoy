@@ -7,6 +7,8 @@
 
 #define JS_AXIS_X               0x00
 #define JS_AXIS_Y               0x01
+#define JS_ONE                  0x00
+#define JS_THREE                0x02
 #define JS_NINE                 0x08
 
 

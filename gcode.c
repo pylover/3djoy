@@ -4,6 +4,7 @@
 
 #define STEP 1
 #define FEEDRATE    1000
+#define Z_FEEDRATE  400
 
 
 int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
@@ -16,6 +17,8 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
 
     if (e->type == JS_EVENT_AXIS) {
         axis = e->number == JS_AXIS_X? 'X': 'Y';
+        
+        /* value -1/1 */
         step = e->value > 0? -STEP: STEP;
         if (axis == 'Y') {
             step = -step;
@@ -25,12 +28,14 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
     }
     else if (e->type == JS_EVENT_BUTTON) {
         switch (e->number) {
-            case JS_NINE:
-            
-                if (e->value == 1) {
-                    *outlen = sprintf(outbuff, "G28");
-                    return OK;
-                }
+            case JS_NINE:   // Home
+                *outlen = sprintf(outbuff, "G28");
+                return OK;
+            case JS_ONE:    // Z+
+            case JS_THREE:  // Z-
+                step = e->number == JS_THREE? -STEP: STEP;
+                *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
+                return OK;
         }
     }
     else if ((e->type & JS_EVENT_INIT) == JS_EVENT_INIT) {

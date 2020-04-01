@@ -9,4 +9,5 @@
 
 int gcodeget(struct js_event *e, char *out, int *outlen);
 int gcodeinit(int fd);
+
 #endif
