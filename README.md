@@ -13,7 +13,7 @@ sudo make install
 ### Quickstart
 
 ```bash
-3djoy --serialdevice /dev/ttyACM0 /dev/input/js0 # Default baudrate: 115200
+3djoy /dev/ttyACM0 # Default baudrate: 115200
 ```
 
 #### Help
@@ -30,7 +30,7 @@ Create a file named `/etc/systemd/system/3djoy.service`.
 
 ```systemd
 [Unit]
-Description=Serial port multiplexer
+Description=3djoy
 After=network.target
 
 [Service]

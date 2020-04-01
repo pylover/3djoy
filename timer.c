@@ -2,6 +2,7 @@
 #include "common.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/timerfd.h>
 #include <sys/epoll.h>
 #include <unistd.h>
@@ -61,13 +62,13 @@ void timerset(int s) {
 }
 
 int timerread() {
-    unsigned long t;
+    uint64_t t;
     int err;
     if (!timerstate) {
         return OK;
     }
-    err = read(timerfd, &t, sizeof(unsigned long));
-    if (err != sizeof(unsigned long)) {
+    err = read(timerfd, &t, sizeof(uint64_t));
+    if (err != sizeof(uint64_t)) {
         return ERR;
     }
     return OK;
