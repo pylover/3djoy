@@ -46,7 +46,7 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
 
             case JS_L1:     // Z + .1
             case JS_L2:     // Z - .1
-                *outlen = sprintf(outbuff, "G1F100Z%c0.1", JS_L2? '-': '+');
+                *outlen = sprintf(outbuff, "G1F100Z%c0.1", e->number == JS_L2? '-': '+');
                 return OK;;
  
             case JS_FOUR:    // E+
