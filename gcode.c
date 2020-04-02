@@ -44,7 +44,12 @@ int gcodeget(struct js_event *e, char *outbuff, int *outlen) {
                 *outlen = sprintf(outbuff, "G1F%dZ%d", Z_FEEDRATE, step);
                 return GCODE_REPEAT;
 
-            case JS_FOUR:     // E+
+            case JS_L1:     // Z + .1
+            case JS_L2:     // Z - .1
+                *outlen = sprintf(outbuff, "G1F20Z%c0.1", JS_L2? '-': '');
+                return OK;;
+ 
+            case JS_FOUR:    // E+
             case JS_TWO:     // E-
                 step = e->number == JS_TWO? -STEP: STEP;
                 *outlen = sprintf(outbuff, "G1F%dE%d", E_FEEDRATE, step);
